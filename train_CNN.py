@@ -42,8 +42,6 @@ def main():
 
     global args
 
-    print(args)
-
     seed_everything(42, workers=True)
 
     # Initialize model and dataloader classes
@@ -89,8 +87,8 @@ def main():
         default_root_dir=args.dir,
         max_epochs=args.n_epochs,
         # set this to auto when GPU available
-        accelerator="cpu",
-        # strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
+        accelerator="auto",
+        strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
         deterministic=False,
         callbacks=[
             TQDMProgressBar(),
