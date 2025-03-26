@@ -91,7 +91,7 @@ def main():
         # set this to auto when GPU available
         accelerator="auto",
         strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
-        deterministic=True,
+        deterministic=False,
         callbacks=[
             TQDMProgressBar(),
             best_callback,

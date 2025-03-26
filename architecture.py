@@ -85,7 +85,7 @@ def get_linear_size(layer_params,imsize):
 
     # Extract image sizes
     _,H,W,D= imsize
-    print("Input Data Dimensions:",H,W,D)
+    # print("Input Data Dimensions:",H,W,D)
 
     # Iterate through layers to get dimensions
     for i in range(index):
@@ -98,7 +98,7 @@ def get_linear_size(layer_params,imsize):
    
     # Comput linear dimension (heigh*width*n_channel)
     linear_size = H*W*D*layer_params[index-2][1][1]
-    print("Dense layer value",layer_params[index-2][1][1])
+    # print("Dense layer value",layer_params[index-2][1][1])
 
     return linear_size
 
@@ -115,7 +115,7 @@ def parse_arch(arch_string):
 
 
     layer_params =  get_convolution_dims(layer_params)
-    print(layer_params)
+    # print(layer_params)
 
     return layer_params,names
 
