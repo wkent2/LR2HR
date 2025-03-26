@@ -90,7 +90,7 @@ def main():
         max_epochs=args.n_epochs,
         # set this to auto when GPU available
         accelerator="auto",
-        strategy=L.strategies.DDPStrategy(find_unused_parameters=False),
+        strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
         deterministic=True,
         callbacks=[
             TQDMProgressBar(),
