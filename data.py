@@ -53,6 +53,7 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None):
     To turn the output back into a numpy array, just do np.array(X_aug) and
     np.array(Y_aug).
     """
+    print("Augmenting data by a factor of",factor)
     if rng is None:
         rng = np.random.default_rng()
 
@@ -237,15 +238,21 @@ class Microstructures(Dataset):
     def __len__(self):
         return len(self.X)
 
+    # def norm_images(self, X,contrast):
+
+    #     if contrast == 'A':
+    #         a = 13500
+    #         b = 55500
+    #     elif contrast == 'C':
+    #         a = 13500
+    #         b = 76500
+    #     return (((X - a) / b - a), a, b)
+
     def norm_images(self, X,contrast):
 
-        if contrast == 'A':
-            a = 13500
-            b = 55500
-        elif contrast == 'C':
-            a = 13500
-            b = 76500
-        return (((X - a) / b - a), a, b)
+        a=np.amin(X)
+        b=np.amax(X)
+        return ((X - a) / b - 0.5, a, b)
 
     def __getitem__(self, idx):
         x, y = self.X[idx], self.y[idx]

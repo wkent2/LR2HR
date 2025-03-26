@@ -89,8 +89,8 @@ def main():
         default_root_dir=args.dir,
         max_epochs=args.n_epochs,
         # set this to auto when GPU available
-        accelerator="auto",
-        strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
+        accelerator="cpu",
+        # strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
         deterministic=False,
         callbacks=[
             TQDMProgressBar(),
@@ -99,8 +99,6 @@ def main():
             lr_logger
         ],
         # Model weights and parameters are save in checkpoint.
-        # Supply this if you want to start from previous traininge
-        resume_from_checkpoint=args.ckpt,
     )
 
     trainer.fit(model)
