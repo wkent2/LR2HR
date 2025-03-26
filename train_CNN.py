@@ -30,6 +30,13 @@ from pytorch_lightning.callbacks import ModelCheckpoint,ModelSummary
 
 from L_module import MicroCNN
 
+class LearningRateLogger(Callback):
+    def on_train_epoch_end(self, trainer, pl_module):
+        # Log the learning rate of the first param group
+        optimizer = trainer.optimizers[0]
+        lr = optimizer.param_groups[0]['lr']
+        pl_module.log('learning_rate', lr, on_epoch=True, prog_bar=True, logger=True,sync_dist=True)
+
 def main():
 
     global args
@@ -54,6 +61,8 @@ def main():
                      split_by_job=~args.dont_keep_sets_together,
                      contrast=args.contrast
                     )
+
+    lr_logger = LearningRateLogger()
 
     # Checkpoints the model for best validation loss
     best_callback = ModelCheckpoint(
@@ -80,11 +89,13 @@ def main():
         max_epochs=args.n_epochs,
         # set this to auto when GPU available
         accelerator="auto",
+        strategy=L.strategies.DDPStrategy(find_unused_parameters=False),
         deterministic=True,
         callbacks=[
             TQDMProgressBar(),
             best_callback,
             checkpoint_callback,
+            lr_logger
         ],
         # Model weights and parameters are save in checkpoint.
         # Supply this if you want to start from previous traininge
@@ -132,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--i_outputs",
         type=str,
-        default='(0,1,2,3,4,5,6,7,8,9,10,11,12)',
+        default='(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14)',
         help="Which outputs to train on? Enter with commas and no spaces. Key: 0,1,2 = f1,2,3.  3,4,5 = tort1,2,3. 6,7,8 = davg1,2,3.  9=tpb.  10,11,12 = sa12,sa13,sa23.  13,14,15 = std1,2,3",
     )
     
