@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 16 11:46:06 2024
+
+@author: williamkent
+"""
+
+import numpy as np 
+import matplotlib.pyplot as plt
+import os
+import pandas as pd
+import math
+import argparse
+
+
+def parseargs():
+    p = argparse.ArgumentParser(description="Plots loss function from trainging results")
+    p.add_argument('version',type=int,help="Loss version to plot")    
+
+
+    args = p.parse_args()
+    
+    return args
+
+def average_values_by_key(list1, list2):
+    # Create lists to store the keys and averages
+    keys = []
+    averages = []
+    
+    # Create a dictionary to store the sum and count of values for each key
+    sum_count = {}
+    
+    # Iterate over the lists simultaneously
+    for value, key in zip(list1, list2):
+        if key in sum_count:
+            # If the key exists, update the sum and count
+            sum_count[key][0] += value
+            sum_count[key][1] += 1
+        else:
+
+
+            # If the key does not exist, initialize the sum and count
+            sum_count[key] = [value, 1]
+    
+    # Calculate the average for each key and append to the lists
+    for key, (sum_value, count) in sum_count.items():
+        keys.append(key)
+        averages.append(sum_value / count)
+    
+    return keys, averages
+
+# Example usage:
+
+
+if __name__ == "__main__":
+
+    # Parse arguments
+    args = parseargs()
+
+    version_name = 'version_'+str(args.version)
+
+    data = pd.read_csv(os.path.join('./resultsLR2HR/lightning_logs/',version_name,'metrics.csv'),header=0)
+
+    epochs = []
+    train_loss = []
+    val_loss = []
+    train_loss_step = []
+    epoch_step = []
+
+    for i in range(len(data)):
+        if math.isnan(data['train_loss'][i]) != True:
+            epochs.append(data['epoch'][i])
+            train_loss.append(data['train_loss'][i])
+        if math.isnan(data['val_loss'][i]) != True:
+            val_loss.append(data['val_loss'][i])
+        if math.isnan(data['train_loss'][i]) != True:
+            train_loss_step.append(data['train_loss'][i])
+            epoch_step.append(data['epoch'][i])
+            
+
+    epochs_2,train_loss_2 = average_values_by_key(train_loss_step,epoch_step)
+        
+        
+    start_index = 0
+
+
+    plt.close('all')
+    plt.figure(figsize=(12,5))
+
+    plt.subplot(1,2,1)
+    plt.plot(epochs[start_index:],train_loss[start_index:],color='blue',label='Train')
+    plt.plot(epochs[start_index:],val_loss[start_index:],color='green',label='Validation')
+    plt.xlabel('Epoch',fontsize=12)
+    plt.ylabel('MSE',fontsize=12)
+    plt.legend()
+
+    plt.subplot(1,2,2)
+    plt.plot(epochs[start_index:],train_loss[start_index:],color='blue',label='Train')
+    plt.plot(epochs[start_index:],val_loss[start_index:],color='green',label='Validation')
+    plt.xlabel('Epoch',fontsize=12)
+    plt.ylabel('MSE',fontsize=12)
+    plt.yscale('log')
+    plt.legend()
+    # plt.ylim(0,0.0005)
+    plt.tight_layout()
+
+    plt.savefig(os.path.join('./resultsLR2HR/lightning_logs/',version_name,'loss.png'),dpi=300)
