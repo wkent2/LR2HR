@@ -27,6 +27,7 @@ from pytorch_lightning import (
 )
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from pytorch_lightning.callbacks import ModelCheckpoint,ModelSummary
+from pytorch_lightning.callbacks import Callback
 
 from L_module import MicroCNN
 
