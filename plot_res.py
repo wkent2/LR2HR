@@ -111,7 +111,7 @@ if __name__ == "__main__":
                                     hparams['output_val'],
                                     hparams['transform'],
                                     hparams['augment'],
-                                    hparams['factor'],
+                                    hparams['aug_factor'],
                                     hparams['remove_bad'],
                                     hparams['contrast'],
                                     hparams['job_group'])
