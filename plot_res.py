@@ -22,6 +22,7 @@ from L_module import MicroCNN
 import argparse
 import yaml
 from data import *
+from tqdm import tqdm
 
 def parseargs():
     p = argparse.ArgumentParser(description="Plots results from CNN training")
