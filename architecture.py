@@ -221,8 +221,6 @@ class CNNModel(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        
-        x[:, :3] = nn.Softmax(dim=1)(x[:, :3])
 
         return x
 
