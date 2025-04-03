@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # Load data
     full_dataset = Microstructures(hparams['data_path'], 
                                     hparams['output_val'],
-                                    hparams['transorm'],
+                                    hparams['transform'],
                                     hparams['augment'],
                                     hparams['factor'],
                                     hparams['remove_bad'],
