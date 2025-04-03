@@ -109,12 +109,12 @@ if __name__ == "__main__":
     # Load data
     full_dataset = Microstructures(hparams['data_path'], 
                                     hparams['output_val'],
-                                    hparams['transform'],
-                                    hparams['augment'],
-                                    hparams['aug_factor'],
-                                    hparams['remove_bad'],
-                                    hparams['contrast'],
-                                    hparams['job_group'])
+                                    transform=hparams['transform'],
+                                    augment=hparams['augment'],
+                                    factor=hparams['aug_factor'],
+                                    remove_bad=True,
+                                    contrast=hparams['contrast'],
+                                    job_group=~hparams['split_by_job'])
 
 
     # Applies extra random seed. Not sure why it needs this but data does not 
