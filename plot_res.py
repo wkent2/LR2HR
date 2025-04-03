@@ -122,7 +122,7 @@ if __name__ == "__main__":
     generator1 = torch.Generator().manual_seed(args.s)
 
     # Figures out train and validation data split
-    val_size = int(hparams['val_split-frac'] * len(full_dataset))
+    val_size = int(hparams['val_split_frac'] * len(full_dataset))
     train_size = len(full_dataset) - val_size
     
     # Splits data into train and validation datasets
