@@ -121,3 +121,21 @@ class MicroCNN(pl.LightningModule):
     def val_dataloader(self):
         # Validation data loader
         return DataLoader(self.val_dataset, batch_size=self.batch_size,num_workers=4)
+
+    def load_model_checkpoint(self, checkpoint_path):
+        print("Loading model weights from", checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, map_location=lambda storage, loc: storage)
+        model_state_dict = checkpoint['state_dict']
+
+        self.load_state_dict(model_state_dict)
+        
+        # Verify loaded state dict
+        loaded_state_dict = self.model.state_dict()
+        # print("Model state dict keys after loading checkpoint:", list(loaded_state_dict.keys()))
+        
+        # Load the optimizer state dict if needed
+        # if 'optimizer_states' in checkpoint:
+        #     self.trainer.optimizers[0].load_state_dict(checkpoint['optimizer_states'][0])
+        #     print("Optimizer state loaded.")
+
+        print("Model weights loaded successfully.")
