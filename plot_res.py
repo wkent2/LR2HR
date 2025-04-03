@@ -129,8 +129,8 @@ if __name__ == "__main__":
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size],generator=generator1)
     
     # Initializes train and validation data loaders
-    train_DL = DataLoader(train_dataset, batch_size=hparams['b_size'], num_workers=1,shuffle=True)
-    val_DL = DataLoader(val_dataset, batch_size=hparams['b_size'],num_workers=1)
+    train_DL = DataLoader(train_dataset, batch_size=hparams['batch_size'], num_workers=1,shuffle=True)
+    val_DL = DataLoader(val_dataset, batch_size=hparams['batch_size'],num_workers=1)
 
     # Get path to checkpoint
     chk_path = get_checkpoint_path(path_to_res,args.b)
@@ -185,8 +185,8 @@ if __name__ == "__main__":
     # correctly on Joule. Not final results 
 
     # Gets keys for the variables
-    df = pd.read_csv(micro_path,header=0,index_col=0)
-    names = df.keys()[hparams['param_ind']]
+    
+    names = ['f1','f2','f3','tort1','tort2','tort3','davg1','davg2','davg3','tpb','tpbconnfrac','tpbtot','sa12','sa13','sa23']
 
     print("Plotting results")
     for i in range(len(names)):
