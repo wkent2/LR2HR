@@ -208,6 +208,7 @@ class Microstructures(Dataset):
         self.job_group = job_group
 
 
+
         with h5py.File(file_path, "r") as f:
             self.X = f["X"][:]  # Adjust 'your_dataset_key' as needed
             self.y = f["y"][:]
@@ -239,6 +240,8 @@ class Microstructures(Dataset):
         return len(self.X)
 
     def norm_images(self, X,contrast):
+
+        print("Normalizing data with",contrast,"contrast")
 
         if contrast == 'A':
             a = 13500
