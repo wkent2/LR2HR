@@ -107,13 +107,13 @@ if __name__ == "__main__":
     if args.data:
         hparams['data_path'] = args.data
 
-    print("Constructing dataset from",hparams['data_path'], "with",hparams['contrast'],"contrast".)
+    print("Constructing dataset from",hparams['data_path'], "with",hparams['contrast'],"contrast")
 
     # Load data
     full_dataset = Microstructures(hparams['data_path'], 
                                     hparams['output_val'],
                                     transform=hparams['transform'],
-                                    augment=False,
+                                    augment=hparams['augment'],
                                     factor=hparams['aug_factor'],
                                     remove_bad=True,
                                     contrast=hparams['contrast'],
