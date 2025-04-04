@@ -21,7 +21,7 @@ import pandas as pd
 from L_module import MicroCNN
 import argparse
 import yaml
-from data import *
+from data import Microstructures
 from tqdm import tqdm
 
 def parseargs():
@@ -33,6 +33,7 @@ def parseargs():
     p.add_argument('-mi',type=str,default=None,help="Option to plot different microstructure characteristic data")
     p.add_argument('-dmap',type=str,default=None,help="Option to plot with dmap values")
     p.add_argument('-s',type=int,default=100,help="Random seed")
+    p.add_argument('-c',type=str,default=None,help="Option to change contrast")
 
     args = p.parse_args()
     
@@ -106,6 +107,9 @@ if __name__ == "__main__":
 
     if args.data:
         hparams['data_path'] = args.data
+
+    if args.c:
+        hparams['contrast'] = args.c
 
     print("Constructing dataset from",hparams['data_path'], "with",hparams['contrast'],"contrast")
 
