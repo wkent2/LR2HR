@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim.lr_scheduler import StepLR
 
 import pytorch_lightning as pl
 from pytorch_lightning import (
@@ -41,6 +42,8 @@ class MicroCNN(pl.LightningModule):
                  split_by_job = False,
                  contrast='C',
                  seed=42,
+                 gamma_step=20,
+                 gamma=1.0
                 ):
 
         
@@ -61,6 +64,8 @@ class MicroCNN(pl.LightningModule):
         self.split_by_job = split_by_job
         self.contrast=contrast
         self.seed=seed
+        self.gamma_step=gamma_step
+        self.gamma = gamma
 
         with h5py.File(data_path, "r") as f:
             X = f["X"][0]  
@@ -100,9 +105,21 @@ class MicroCNN(pl.LightningModule):
         return val_loss
 
     def configure_optimizers(self):
-        # Configure the optimizer and optionally a scheduler
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        # Configure the optimizer with non-fozen parameters
+        optimizer = Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=self.learning_rate,weight_decay=0.001)
+        
+
+        # Define a learning rate scheduler
+        scheduler = StepLR(optimizer, step_size=self.gamma_step, gamma=self.gamma)
+        
+        return {
+            'optimizer': optimizer,
+            'lr_scheduler': {
+                'scheduler': scheduler,
+                'interval': 'epoch',  # or 'step'
+                'frequency': 1
+            }
+        }
 
     def setup(self, stage=None):
         # Split the dataset for training and validation

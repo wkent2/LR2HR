@@ -58,7 +58,9 @@ def main():
                      val_split_frac=0.2,
                      test_split_frac=0,
                      split_by_job=~args.dont_keep_sets_together,
-                     contrast=args.contrast
+                     contrast=args.contrast,
+                     gamma_step=args.gamma_step,
+                     gamma = args.scheduler_gamma
                     )
 
     lr_logger = LearningRateLogger()
@@ -135,7 +137,13 @@ if __name__ == "__main__":
         "--scheduler_gamma",
         type=float,
         default=0.8,
-        help="scheduler factor to reduce every 10 epochs",
+        help="scheduler factor to reduce ",
+    )
+    parser.add_argument(
+        "--gamma_step",
+        type=int,
+        default=10,
+        help="How many epochs elapse before the learning rate is updates",
     )
     parser.add_argument(
         "--i_outputs",
