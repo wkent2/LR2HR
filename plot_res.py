@@ -147,8 +147,10 @@ if __name__ == "__main__":
         val_size = int(hparams['val_split_frac'] * len(full_dataset))
         train_size = len(full_dataset) - val_size
         train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+        save_names(train_dataset,val_dataset,path_to_res)
     else:
         train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'])
+        save_names(train_dataset,val_dataset,path_to_res)
         print("Microstructure were split by job group \n")
     
     # Initializes train and validation data loaders
