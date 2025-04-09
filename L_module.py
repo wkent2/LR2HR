@@ -106,7 +106,7 @@ class MicroCNN(pl.LightningModule):
 
     def configure_optimizers(self):
         # Configure the optimizer with non-fozen parameters
-        optimizer = Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=self.learning_rate,weight_decay=0.001)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         
 
         # Define a learning rate scheduler
