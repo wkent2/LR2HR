@@ -143,7 +143,7 @@ if __name__ == "__main__":
     # split correctly without it. 
     generator1 = torch.Generator().manual_seed(args.s)
 
-    if hparams['split_by_job']:
+    if ~hparams['split_by_job']:
         val_size = int(hparams['val_split_frac'] * len(full_dataset))
         train_size = len(full_dataset) - val_size
         train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
