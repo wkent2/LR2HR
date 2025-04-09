@@ -156,6 +156,9 @@ def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=
     X_train = []
     y_train = []
     i_test = []
+    # Save names too (WFK)
+    names_test = []
+    names_train = []
 
     for i, name in enumerate(names):
         # Convert this full AAABBBCCCDEFGG name to the modified type (AAABBBCCCDGG)
@@ -164,11 +167,13 @@ def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=
         if name_modified in jobcodes_train:
             X_train.append(X[i])
             y_train.append(y[i])
+            names_train.append(name)
         elif name_modified in jobcodes_test:
             # This should really just be an "else" but I'm doing this for debug
             X_test.append(X[i])
             y_test.append(y[i])
             i_test.append(i)
+            names_test.append(name)
         else:
             print("  Strange! " + name + "did not match with any jobcodes.")
 
@@ -181,7 +186,7 @@ def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=
         final_test_frac,
     )
 
-    return (X_test, y_test, X_train, y_train, i_test)
+    return (X_test, y_test, X_train, y_train,names_test,names_train, i_test)
 
 
 class Microstructures(Dataset):
@@ -263,7 +268,7 @@ class Microstructures(Dataset):
         Splits the dataset into training and validation sets based on job groups.
         This static method assumes 'names' attribute is available in the dataset.
         """
-        X_test, y_test, X_train, y_train, _ = test_train_split_by_job_group(
+        X_test, y_test, X_train, y_train,names_test,names_train,_ = test_train_split_by_job_group(
             list(full_dataset.X),
             list(full_dataset.y),
             list(full_dataset.names),
@@ -280,6 +285,7 @@ class Microstructures(Dataset):
             remove_bad=False,
         )
         train_dataset.X, train_dataset.y = np.array(X_train), np.array(y_train)
+        train_dataset.names = names_train
 
         val_dataset = Microstructures(
             full_dataset.file_path,
@@ -289,5 +295,6 @@ class Microstructures(Dataset):
             remove_bad=False,
         )
         val_dataset.X, val_dataset.y = np.array(X_test), np.array(y_test)
+        val_dataset.names = names_test
 
         return train_dataset, val_dataset
