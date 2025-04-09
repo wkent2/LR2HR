@@ -87,7 +87,7 @@ def main():
         default_root_dir=args.dir,
         max_epochs=args.n_epochs,
         # set this to auto when GPU available
-        accelerator="auto",
+        accelerator="cpu",
         strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
         deterministic=False,
         callbacks=[

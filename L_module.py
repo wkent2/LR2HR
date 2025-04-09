@@ -113,6 +113,7 @@ class MicroCNN(pl.LightningModule):
         else:
             full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,job_group=True)
             self.train_dataset, self.val_dataset = full_dataset.split_by_job_group(full_dataset,self.val_split_frac)
+            print("Microstructure were split by job group \n")
 
     def train_dataloader(self):
         # Training data loader
@@ -122,4 +123,25 @@ class MicroCNN(pl.LightningModule):
         # Validation data loader
         return DataLoader(self.val_dataset, batch_size=self.batch_size,num_workers=4)
 
+    def save_names(self):
+        # Use logger save directory if available, else fall back
+        output_dir = self.logger.log_dir if self.logger else self.trainer.default_root_dir
+
+        train_path = os.path.join(output_dir, 'train_names.txt')
+        val_path = os.path.join(output_dir, 'val_names.txt')
+
+        with open(train_path, 'w') as f:
+            for name in self.train_dataset.names:
+                print(name)
+                f.write(f"{name}\n")
+
+        with open(val_path, 'w') as f:
+            for name in self.val_dataset.names:
+                f.write(f"{name}\n")
+
+        print(f"Saved train names to {train_path}")
+        print(f"Saved val names to {val_path}")
+    
+    def on_train_start(self):
+        self.save_names()
     
