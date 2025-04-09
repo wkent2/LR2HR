@@ -32,12 +32,27 @@ def parseargs():
     p.add_argument('-data',type=str,default=None,help="Option to plot different data")
     p.add_argument('-mi',type=str,default=None,help="Option to plot different microstructure characteristic data")
     p.add_argument('-dmap',type=str,default=None,help="Option to plot with dmap values")
-    p.add_argument('-s',type=int,default=100,help="Random seed")
+    p.add_argument('-s',type=int,default=42,help="Random seed")
     p.add_argument('-c',type=str,default=None,help="Option to change contrast")
 
     args = p.parse_args()
     
     return args
+
+def save_names(train_dataset,val_dataset,path_to_res):
+
+    train_path = os.path.join(path_to_res,'train_names_plot.txt')
+    val_path = os.path.join(path_to_res,'val_names_plot.txt')
+
+    with open(train_path, 'w') as f:
+        f.write(f"# {len(train_dataset.names)} samples\n")
+            for name in train_dataset.names:
+                f.write(f"{name}\n")
+
+    with open(val_path, 'w') as f:
+        f.write(f"# {len(val_dataset.names)} samples\n")
+        for name in val_dataset.names:
+            f.write(f"{name}\n")
 
 def load_hyperparameters(file_path):
     with open(file_path, "r") as file:
@@ -128,12 +143,13 @@ if __name__ == "__main__":
     # split correctly without it. 
     generator1 = torch.Generator().manual_seed(args.s)
 
-    # Figures out train and validation data split
-    val_size = int(hparams['val_split_frac'] * len(full_dataset))
-    train_size = len(full_dataset) - val_size
-    
-    # Splits data into train and validation datasets
-    train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size],generator=generator1)
+    if hparams['split_by_job']:
+            val_size = int(hparams['val_split_frac'] * len(full_dataset))
+            train_size = len(full_dataset) - val_size
+            train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+        else:
+            train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'])
+            print("Microstructure were split by job group \n")
     
     # Initializes train and validation data loaders
     train_DL = DataLoader(train_dataset, batch_size=hparams['batch_size'], num_workers=1,shuffle=True)
