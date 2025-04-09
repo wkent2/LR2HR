@@ -126,8 +126,8 @@ if __name__ == "__main__":
                                     factor=hparams['aug_factor'],
                                     remove_bad=True,
                                     contrast=hparams['contrast'],
-                                    job_group=~hparams['split_by_job'],
-                                    seed=args.s)
+                                    job_group=~hparams['split_by_job']
+                                    )
 
 
     # Applies extra random seed. Not sure why it needs this but data does not 
