@@ -212,8 +212,7 @@ class Microstructures(Dataset):
         with h5py.File(file_path, "r") as f:
             self.X = f["X"][:]  # Adjust 'your_dataset_key' as needed
             self.y = f["y"][:]
-            if job_group:
-                self.names = f["names"][:]
+            self.names = f["names"][:]
 
         if type(output_val) == int:
             self.y = self.y[:, output_val : output_val + 1]
