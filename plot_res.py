@@ -87,16 +87,6 @@ def get_checkpoint_path(results_path,best):
 
     return checkp
 
-def get_chan(dmap_in):
-    if dmap_in == 'None':
-        return 3
-    elif dmap_in == 'single':
-        return 4
-    elif dmap_in == 'multi':
-        return 6
-    else:
-        print("Unreccongized dmap input")
-        exit()
 
 
 
@@ -136,7 +126,8 @@ if __name__ == "__main__":
                                     factor=hparams['aug_factor'],
                                     remove_bad=True,
                                     contrast=hparams['contrast'],
-                                    job_group=~hparams['split_by_job'])
+                                    job_group=~hparams['split_by_job'],
+                                    seed=args.s)
 
 
     # Applies extra random seed. Not sure why it needs this but data does not 
@@ -149,7 +140,7 @@ if __name__ == "__main__":
         train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
         save_names(train_dataset,val_dataset,path_to_res)
     else:
-        train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'])
+        train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'],seed=args.s)
         save_names(train_dataset,val_dataset,path_to_res)
         print("Microstructure were split by job group \n")
     

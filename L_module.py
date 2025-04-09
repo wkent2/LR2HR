@@ -39,7 +39,8 @@ class MicroCNN(pl.LightningModule):
                  val_split_frac = 0.2,
                  test_split_frac = 0,
                  split_by_job = False,
-                 contrast='C'
+                 contrast='C',
+                 seed=42,
                 ):
 
         
@@ -59,6 +60,7 @@ class MicroCNN(pl.LightningModule):
         self.test_split_frac = test_split_frac
         self.split_by_job = split_by_job
         self.contrast=contrast
+        self.seed=seed
 
         with h5py.File(data_path, "r") as f:
             X = f["X"][0]  
@@ -112,7 +114,7 @@ class MicroCNN(pl.LightningModule):
             self.train_dataset, self.val_dataset = random_split(full_dataset, [train_size, val_size])
         else:
             full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,job_group=True)
-            self.train_dataset, self.val_dataset = full_dataset.split_by_job_group(full_dataset,self.val_split_frac)
+            self.train_dataset, self.val_dataset = full_dataset.split_by_job_group(full_dataset,self.val_split_frac,seed=self.seed)
             print("Microstructure were split by job group \n")
 
     def train_dataloader(self):

@@ -263,7 +263,7 @@ class Microstructures(Dataset):
         return x,y
 
     @staticmethod
-    def split_by_job_group(full_dataset, test_frac=0.2, shuffle=True):
+    def split_by_job_group(full_dataset, test_frac=0.2, shuffle=True,seed=42):
         """
         Splits the dataset into training and validation sets based on job groups.
         This static method assumes 'names' attribute is available in the dataset.
@@ -274,7 +274,7 @@ class Microstructures(Dataset):
             list(full_dataset.names),
             test_frac=test_frac,
             shuffle=shuffle,
-            rng=np.random.default_rng(seed=42)
+            rng=np.random.default_rng(seed=seed)
         )
 
         # Convert lists back to datasets

@@ -42,7 +42,7 @@ def main():
 
     global args
 
-    seed_everything(42, workers=True)
+    seed_everything(args.seed, workers=True)
 
     # Initialize model and dataloader classes
     model = MicroCNN(
@@ -201,6 +201,13 @@ if __name__ == "__main__":
         default='A',
         choices=['A','C'],
         help="X-ray contrast used for data. Important for data normalization.",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=float,
+        default=42,
+        help="Random seed for all generators",
     )
     
     args = parser.parse_args()
