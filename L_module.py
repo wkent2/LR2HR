@@ -131,11 +131,12 @@ class MicroCNN(pl.LightningModule):
         val_path = os.path.join(output_dir, 'val_names.txt')
 
         with open(train_path, 'w') as f:
+            f.write(f"# {len(self.train_dataset.names)} samples\n")
             for name in self.train_dataset.names:
-                print(name)
                 f.write(f"{name}\n")
 
         with open(val_path, 'w') as f:
+            f.write(f"# {len(self.val_dataset.names)} samples\n")
             for name in self.val_dataset.names:
                 f.write(f"{name}\n")
 
