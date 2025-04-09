@@ -46,8 +46,8 @@ def save_names(train_dataset,val_dataset,path_to_res):
 
     with open(train_path, 'w') as f:
         f.write(f"# {len(train_dataset.names)} samples\n")
-            for name in train_dataset.names:
-                f.write(f"{name}\n")
+        for name in train_dataset.names:
+            f.write(f"{name}\n")
 
     with open(val_path, 'w') as f:
         f.write(f"# {len(val_dataset.names)} samples\n")
