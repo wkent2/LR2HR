@@ -144,12 +144,12 @@ if __name__ == "__main__":
     generator1 = torch.Generator().manual_seed(args.s)
 
     if hparams['split_by_job']:
-            val_size = int(hparams['val_split_frac'] * len(full_dataset))
-            train_size = len(full_dataset) - val_size
-            train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
-        else:
-            train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'])
-            print("Microstructure were split by job group \n")
+        val_size = int(hparams['val_split_frac'] * len(full_dataset))
+        train_size = len(full_dataset) - val_size
+        train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+    else:
+        train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'])
+        print("Microstructure were split by job group \n")
     
     # Initializes train and validation data loaders
     train_DL = DataLoader(train_dataset, batch_size=hparams['batch_size'], num_workers=1,shuffle=True)
