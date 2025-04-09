@@ -274,7 +274,7 @@ class Microstructures(Dataset):
             list(full_dataset.names),
             test_frac=test_frac,
             shuffle=shuffle,
-            rng=42
+            rng=np.random.default_rng(seed=42)
         )
 
         # Convert lists back to datasets
