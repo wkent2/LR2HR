@@ -109,17 +109,19 @@ class MicroCNN(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         
 
-        # Define a learning rate scheduler
-        scheduler = MultiStepLR(optimizer, milestones=[20,40],gamma=0.5)
+        # # Define a learning rate scheduler
+        # scheduler = MultiStepLR(optimizer, milestones=[20,40],gamma=0.5)
         
-        return {
-            'optimizer': optimizer,
-            'lr_scheduler': {
-                'scheduler': scheduler,
-                'interval': 'epoch',  # or 'step'
-                'frequency': 1
-            }
-        }
+        # return {
+        #     'optimizer': optimizer,
+        #     'lr_scheduler': {
+        #         'scheduler': scheduler,
+        #         'interval': 'epoch',  # or 'step'
+        #         'frequency': 1
+        #     }
+        # }
+
+        return optimizer
 
     def setup(self, stage=None):
         # Split the dataset for training and validation
