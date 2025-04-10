@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ExponentialLR
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR, MultiStepLR
 
 import pytorch_lightning as pl
 from pytorch_lightning import (
@@ -110,7 +110,7 @@ class MicroCNN(pl.LightningModule):
         
 
         # Define a learning rate scheduler
-        scheduler = StepLR(optimizer, step_size=self.gamma_step, gamma=self.gamma)
+        scheduler = MultiStepLR(optimizer, milestones=[50],gamma=0.1)
         
         return {
             'optimizer': optimizer,
