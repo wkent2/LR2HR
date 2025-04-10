@@ -110,7 +110,7 @@ class MicroCNN(pl.LightningModule):
         
 
         # Define a learning rate scheduler
-        scheduler = MultiStepLR(optimizer, milestones=[50],gamma=0.1)
+        scheduler = MultiStepLR(optimizer, milestones=[20,40],gamma=0.5)
         
         return {
             'optimizer': optimizer,
