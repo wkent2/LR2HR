@@ -54,8 +54,6 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
     cubic : bool
         Whether data is cubic (X,X,X) or rectangular in Z dimension (Z,X,X).
     """
-    import numpy as np
-
     print("Augmenting data by a factor of", factor)
     if rng is None:
         rng = np.random.default_rng()
@@ -70,6 +68,7 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
         i = rng.integers(0, N_orig)
         x = X[i]
         y = Y[i]
+        original_shape = x.shape
         did_anything = False
 
         while not did_anything:
@@ -86,10 +85,11 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
                         permute_axes = [0, 2, 1]  # swap X and Y
                     else:
                         permute_axes = [0, 1, 2]  # do nothing
-                    if permute_axes != [0, 1, 2]:
-                        did_anything = True
                 if permute_axes != [0, 1, 2]:
                     x = np.transpose(x, permute_axes)
+                    # Restore shape if needed
+                    if x.shape != original_shape:
+                        x = x.reshape(original_shape)
                     did_anything = True
 
             # Flips
@@ -99,9 +99,12 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
             if rng.binomial(1, 0.5):
                 flipaxes.append(1)  # X axis
             if rng.binomial(1, 0.5):
-                flipaxes.append(2)  # X axis
+                flipaxes.append(2)  # Y axis
             if flipaxes:
                 x = np.flip(x, flipaxes)
+                # Restore shape if needed
+                if x.shape != original_shape:
+                    x = x.reshape(original_shape)
                 did_anything = True
 
         X_additional.append(x)
@@ -115,7 +118,6 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
         X_aug, Y_aug = shuffle_lists(X_aug, Y_aug, rng=rng)
 
     return X_aug, Y_aug
-
 
 def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=None):
     """
