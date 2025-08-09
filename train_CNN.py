@@ -220,7 +220,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--seed",
+        "--cubic",
         type=bool,
         default=True,
         help="Whether or not data is cubic",
