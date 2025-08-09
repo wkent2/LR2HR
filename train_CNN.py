@@ -60,7 +60,8 @@ def main():
                      split_by_job=~args.dont_keep_sets_together,
                      contrast=args.contrast,
                      gamma_step=args.gamma_step,
-                     gamma = args.scheduler_gamma
+                     gamma = args.scheduler_gamma,
+                     cubic = args.cubic
                     )
 
     lr_logger = LearningRateLogger()
@@ -216,6 +217,13 @@ if __name__ == "__main__":
         type=float,
         default=42,
         help="Random seed for all generators",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=bool,
+        default=True,
+        help="Whether or not data is cubic",
     )
     
     args = parser.parse_args()

@@ -43,7 +43,8 @@ class MicroCNN(pl.LightningModule):
                  contrast='C',
                  seed=42,
                  gamma_step=20,
-                 gamma=1.0
+                 gamma=1.0,
+                 cubic=True,
                 ):
 
         
@@ -66,6 +67,7 @@ class MicroCNN(pl.LightningModule):
         self.seed=seed
         self.gamma_step=gamma_step
         self.gamma = gamma
+        self.cubic = cubic
 
         with h5py.File(data_path, "r") as f:
             X = f["X"][0]  
@@ -127,12 +129,12 @@ class MicroCNN(pl.LightningModule):
         # Split the dataset for training and validation
         
         if not self.split_by_job:
-            full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast)
+            full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,cubic=self.cubic)
             val_size = int(self.split_frac * len(full_dataset))
             train_size = len(full_dataset) - val_size
             self.train_dataset, self.val_dataset = random_split(full_dataset, [train_size, val_size])
         else:
-            full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,job_group=True)
+            full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,job_group=True,cubic=self.cubic)
             self.train_dataset, self.val_dataset = full_dataset.split_by_job_group(full_dataset,self.val_split_frac,seed=self.seed)
             print("Microstructure were split by job group \n")
 

@@ -33,27 +33,30 @@ def remove_bad_data(X, y):
     return (X, y)
 
 
-def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None):
+def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
     """
-    X_aug, Y_aug = data_augment_3d(X,Y,factor=4, shuffle=True, rng=None)
-    X and Y should be a LIST of data that correspond to each other.
-    Each entry of X must be 3-dimensional.
+    Augments 3D data and corresponding labels.
+    
+    If cubic=True, assumes data is (X, X, X) and allows full 3D axis permutations.
+    If cubic=False, assumes data is (Z, X, X) with Z != X and only swaps axes 1 and 2 
+    to preserve shape.
 
-    Apply random permute and flip operations to augment a dataset of size N to
-    a dataset of size factor*N.
-    Augmented data will be shuffled in, with the appropriate Y values at
-    matching indices (i.e. if X_aug[i] is a flip of X_aug[j], Y[i] and Y[j] will
-    be identical too).
-
-    If shuffle=False, they won't be shuffled; new data will be at the end of the
-    old data.
-
-    To turn a numpy array of shape [N,...] (where ... is the size of
-    each individual dataset) into a list like this function needs, do list(X)
-    To turn the output back into a numpy array, just do np.array(X_aug) and
-    np.array(Y_aug).
+    Parameters
+    ----------
+    X, Y : list
+        Lists of corresponding 3D volumes and labels.
+    factor : int
+        Augmentation factor (final size will be factor * original size).
+    shuffle : bool
+        Whether to shuffle augmented data.
+    rng : np.random.Generator or None
+        Random number generator.
+    cubic : bool
+        Whether data is cubic (X,X,X) or rectangular in Z dimension (Z,X,X).
     """
-    print("Augmenting data by a factor of",factor)
+    import numpy as np
+
+    print("Augmenting data by a factor of", factor)
     if rng is None:
         rng = np.random.default_rng()
 
@@ -61,52 +64,57 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None):
     Y_additional = []
     N_orig = len(X)
     N_additional = int((factor - 1) * N_orig)
-    permute_axes = [0, 1, 2]
+
     for _ in range(N_additional):
         # Pick a random X and Y
         i = rng.integers(0, N_orig)
         x = X[i]
         y = Y[i]
         did_anything = False
-        # Do a while loop and choose randomly whether or not to do each operation.
-        # If we don't do any of them at all, start over - we don't want a straight
-        # copied array!
+
         while not did_anything:
-            # Permute axes, or not
-            if rng.binomial(1, 0.5):  # Coin flip
-                # Randomly shuffle the axes, but also make sure they don't end up
-                # back at [0,1,2] which would do nothing at all
-                rng.shuffle(permute_axes)
-                while permute_axes == [0, 1, 2]:
+            # Axis permutation
+            if rng.binomial(1, 0.5):
+                if cubic:
+                    permute_axes = [0, 1, 2]
                     rng.shuffle(permute_axes)
-                x = np.transpose(x, permute_axes)
-                did_anything = True
-            # Flip on axis 0, or not... same with 1 and 2
+                    while permute_axes == [0, 1, 2]:
+                        rng.shuffle(permute_axes)
+                else:
+                    # Only swap spatial axes 1 and 2, keep Z (axis 0) fixed
+                    if rng.binomial(1, 0.5):
+                        permute_axes = [0, 2, 1]  # swap X and Y
+                    else:
+                        permute_axes = [0, 1, 2]  # do nothing
+                    if permute_axes != [0, 1, 2]:
+                        did_anything = True
+                if permute_axes != [0, 1, 2]:
+                    x = np.transpose(x, permute_axes)
+                    did_anything = True
+
+            # Flips
             flipaxes = []
-            if rng.binomial(1, 0.5):  # coin flip
-                flipaxes.append(0)
             if rng.binomial(1, 0.5):
-                flipaxes.append(1)
+                flipaxes.append(0)  # Z axis
             if rng.binomial(1, 0.5):
-                flipaxes.append(2)
-            # If any axes are there at all, do the operation
-            if len(flipaxes):
+                flipaxes.append(1)  # X axis
+            if rng.binomial(1, 0.5):
+                flipaxes.append(2)  # X axis
+            if flipaxes:
                 x = np.flip(x, flipaxes)
                 did_anything = True
-        # Okay we got here, x should now be all flipped and permuted around.
-        # Save it, and the corresponding y value(s), to the lists.
+
         X_additional.append(x)
         Y_additional.append(y)
 
-    # Now append them to the end of the lists X and Y
+    # Append to original data
     X_aug = X + X_additional
     Y_aug = Y + Y_additional
 
-    # Now shuffle their order, but in the same way
     if shuffle:
         X_aug, Y_aug = shuffle_lists(X_aug, Y_aug, rng=rng)
 
-    return (X_aug, Y_aug)
+    return X_aug, Y_aug
 
 
 def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=None):
@@ -201,6 +209,7 @@ class Microstructures(Dataset):
         remove_bad=True,
         contrast='A',
         job_group=None,
+        cubic=True
     ):
         # Load dataset
         self.file_path = file_path
@@ -211,6 +220,7 @@ class Microstructures(Dataset):
         self.remove_bad = remove_bad
         self.contrast=contrast
         self.job_group = job_group
+        self.cubic=cubic
 
 
 
@@ -234,7 +244,7 @@ class Microstructures(Dataset):
 
         if self.augment:
             self.X, self.y = data_augment_3d(
-                list(self.X), list(self.y), factor=self.factor
+                list(self.X), list(self.y), factor=self.factor,cubic=self.cubic
             )
             # Convert back to numpy arrays after augmentation
             self.X = np.array(self.X)
