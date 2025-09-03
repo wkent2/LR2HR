@@ -122,8 +122,8 @@ if __name__ == "__main__":
     full_dataset = Microstructures(hparams['data_path'], 
                                     hparams['output_val'],
                                     transform=hparams['transform'],
-                                    augment=hparams['augment'],
-                                    factor=hparams['aug_factor'],
+                                    augment=False,
+                                    factor=1,
                                     remove_bad=True,
                                     contrast=hparams['contrast'],
                                     job_group=~hparams['split_by_job']
