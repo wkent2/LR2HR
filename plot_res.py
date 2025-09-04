@@ -141,8 +141,11 @@ if __name__ == "__main__":
 
     print("Constructing dataset")
 
+    validation = True
     if args.data:
         hparams['data_path'] = args.data
+        validation = False
+        hparams['split_by_job'] = True
 
     if args.c:
         hparams['contrast'] = args.c
@@ -157,7 +160,7 @@ if __name__ == "__main__":
                                     factor=1,
                                     remove_bad=True,
                                     contrast=hparams['contrast'],
-                                    job_group=~hparams['split_by_job']
+                                    job_group=not hparams['split_by_job']
                                     )
 
 
@@ -165,19 +168,23 @@ if __name__ == "__main__":
     # split correctly without it. 
     generator1 = torch.Generator().manual_seed(args.s)
 
-    if ~hparams['split_by_job']:
-        val_size = int(hparams['val_split_frac'] * len(full_dataset))
-        train_size = len(full_dataset) - val_size
-        train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
-        save_names(train_dataset,val_dataset,path_to_res)
+    if validation:
+        if not hparams['split_by_job']:
+            val_size = int(hparams['val_split_frac'] * len(full_dataset))
+            train_size = len(full_dataset) - val_size
+            train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+            save_names(train_dataset,val_dataset,path_to_res)
+        else:
+            train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'],seed=args.s)
+            save_names(train_dataset,val_dataset,path_to_res)
+            print("Microstructure were split by job group \n")
     else:
-        train_dataset, val_dataset = full_dataset.split_by_job_group(full_dataset,hparams['val_split_frac'],seed=args.s)
-        save_names(train_dataset,val_dataset,path_to_res)
-        print("Microstructure were split by job group \n")
+        train_dataset = full_dataset
     
     # Initializes train and validation data loaders
     train_DL = DataLoader(train_dataset, batch_size=hparams['batch_size'], num_workers=1,shuffle=True)
-    val_DL = DataLoader(val_dataset, batch_size=hparams['batch_size'],num_workers=1)
+    if validation:
+        val_DL = DataLoader(val_dataset, batch_size=hparams['batch_size'],num_workers=1)
 
 
 
@@ -201,8 +208,10 @@ if __name__ == "__main__":
     # Initializes arrays for storing data. 
     ys_train = []
     yhats_train = []
-    ys_val = []
-    yhats_val = []
+    
+    if validation:
+        ys_val = []
+        yhats_val = []
 
     # Iterates through TRAINING data    
     for batch, (X,y) in enumerate(tqdm(train_DL)):
@@ -210,24 +219,27 @@ if __name__ == "__main__":
         ys_train.append(y.detach().cpu().numpy())
         yhats_train.append(y_hat.cpu().detach().numpy())
 
-    # Iterates through VALIDATION data
-    for batch, (X,y) in enumerate(tqdm(val_DL)):
-        y_hat = model(X.to(device))
-        ys_val.append(y.detach().cpu().numpy())
-        yhats_val.append(y_hat.detach().cpu().numpy())
+    if validation:
+        # Iterates through VALIDATION data
+        for batch, (X,y) in enumerate(tqdm(val_DL)):
+            y_hat = model(X.to(device))
+            ys_val.append(y.detach().cpu().numpy())
+            yhats_val.append(y_hat.detach().cpu().numpy())
 
 
     # Concatenates to numpy array 
     ys_train_full = np.concatenate(ys_train)
     yhats_train_full = np.concatenate(yhats_train)
-    ys_val_full = np.concatenate(ys_val)
-    yhats_val_full = np.concatenate(yhats_val)
+    if validation:
+        ys_val_full = np.concatenate(ys_val)
+        yhats_val_full = np.concatenate(yhats_val)
 
     # Saves raw targets and predictions
     np.save(os.path.join(path_to_res,'ys_train.npy'),ys_train_full)
     np.save(os.path.join(path_to_res,'yhats_train.npy'),yhats_train_full)
-    np.save(os.path.join(path_to_res,'ys_val.npy'),ys_val_full)
-    np.save(os.path.join(path_to_res,'yhats_val.npy'),yhats_val_full)
+    if validation:
+        np.save(os.path.join(path_to_res,'ys_val.npy'),ys_val_full)
+        np.save(os.path.join(path_to_res,'yhats_val.npy'),yhats_val_full)
 
     # PLOTS RESULTS 
     # This is just to quickly asses if the plotting was done 
@@ -244,7 +256,10 @@ if __name__ == "__main__":
 
         plt.suptitle(names[i],fontsize=16)
 
-        fulldata = np.concatenate([ys_train_full,yhats_train_full,
+        if validation:
+            fulldata = np.concatenate([ys_train_full,yhats_train_full])
+        else:
+            fulldata = np.concatenate([ys_train_full,yhats_train_full,
                                     ys_val_full,yhats_val_full])
 
         bin_w = np.linspace(np.amin(fulldata),np.amax(fulldata),200)
@@ -257,13 +272,14 @@ if __name__ == "__main__":
         plt.ylabel('Predicted',fontsize=12)
         plt.title('Training Data',fontsize=14)
 
-        plt.subplot(1,2,2)
-        plt.hist2d(ys_val_full[:,i],yhats_val_full[:,i],bins=bin_w,cmap='Blues',density=True)
-        plt.plot(bin_w,bin_w,color='black',linewidth=0.5)
-        plt.gca().set_box_aspect(1.0)
-        plt.xlabel('Target',fontsize=12)
-        plt.ylabel('Predicted',fontsize=12)
-        plt.title('Validation Data',fontsize=14)
+        if validation:
+            plt.subplot(1,2,2)
+            plt.hist2d(ys_val_full[:,i],yhats_val_full[:,i],bins=bin_w,cmap='Blues',density=True)
+            plt.plot(bin_w,bin_w,color='black',linewidth=0.5)
+            plt.gca().set_box_aspect(1.0)
+            plt.xlabel('Target',fontsize=12)
+            plt.ylabel('Predicted',fontsize=12)
+            plt.title('Validation Data',fontsize=14)
 
 
         savename = names[i]+'.png'
