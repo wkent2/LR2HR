@@ -56,15 +56,33 @@ def save_names(train_dataset,val_dataset,path_to_res):
     train_path = os.path.join(path_to_res,'train_names_plot.txt')
     val_path = os.path.join(path_to_res,'val_names_plot.txt')
 
-    with open(train_path, 'w') as f:
-        f.write(f"# {len(train_dataset.names)} samples\n")
-        for name in train_dataset.names:
-            f.write(f"{name}\n")
+    try: # Works for split_by_job
+        with open(train_path, 'w') as f:
+            f.write(f"# {len(train_dataset.names)} samples\n")
+            for name in train_dataset.names:
+                f.write(f"{name}\n")
 
-    with open(val_path, 'w') as f:
-        f.write(f"# {len(val_dataset.names)} samples\n")
-        for name in val_dataset.names:
-            f.write(f"{name}\n")
+        with open(val_path, 'w') as f:
+            f.write(f"# {len(val_dataset.names)} samples\n")
+            for name in val_dataset.names:
+                f.write(f"{name}\n")
+    except: # works for random split
+        names = [train_dataset.dataset.names[i] for i in train_dataset.indices]
+        with open(train_path, 'w') as f:
+            f.write(f"# {len(names)} samples\n")
+            for name in names:
+                f.write(f"{name}\n")
+
+        names = [val_dataset.dataset.names[i] for i in val_dataset.indices]
+        with open(val_path, 'w') as f:
+            f.write(f"# {len(names)} samples\n")
+            for name in names:
+                f.write(f"{name}\n")
+
+
+
+    print(f"Saved train names to {train_path}")
+    print(f"Saved val names to {val_path}")
 
 def load_hyperparameters(file_path):
     with open(file_path, "r") as file:
