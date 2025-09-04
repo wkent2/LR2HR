@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
         plt.suptitle(names[i],fontsize=16)
 
-        if validation:
+        if not validation:
             fulldata = np.concatenate([ys_train_full,yhats_train_full])
         else:
             fulldata = np.concatenate([ys_train_full,yhats_train_full,
