@@ -154,15 +154,30 @@ class MicroCNN(pl.LightningModule):
         train_path = os.path.join(output_dir, 'train_names.txt')
         val_path = os.path.join(output_dir, 'val_names.txt')
 
-        with open(train_path, 'w') as f:
-            f.write(f"# {len(self.train_dataset.names)} samples\n")
-            for name in self.train_dataset.names:
-                f.write(f"{name}\n")
+        try: # Works for split_by_job
+            with open(train_path, 'w') as f:
+                f.write(f"# {len(self.train_dataset.names)} samples\n")
+                for name in self.train_dataset.names:
+                    f.write(f"{name}\n")
 
-        with open(val_path, 'w') as f:
-            f.write(f"# {len(self.val_dataset.names)} samples\n")
-            for name in self.val_dataset.names:
-                f.write(f"{name}\n")
+            with open(val_path, 'w') as f:
+                f.write(f"# {len(self.val_dataset.names)} samples\n")
+                for name in self.val_dataset.names:
+                    f.write(f"{name}\n")
+        except: # works for random split
+            names = [train_dataset.dataset.names[i] for i in train_dataset.indices]
+            with open(train_path, 'w') as f:
+                f.write(f"# {len(names)} samples\n")
+                for name in names:
+                    f.write(f"{name}\n")
+
+            names = [val_dataset.dataset.names[i] for i in val_dataset.indices]
+            with open(val_path, 'w') as f:
+                f.write(f"# {len(names)} samples\n")
+                for name in names:
+                    f.write(f"{name}\n")
+
+
 
         print(f"Saved train names to {train_path}")
         print(f"Saved val names to {val_path}")
