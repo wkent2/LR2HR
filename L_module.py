@@ -165,13 +165,13 @@ class MicroCNN(pl.LightningModule):
                 for name in self.val_dataset.names:
                     f.write(f"{name}\n")
         except: # works for random split
-            names = [train_dataset.dataset.names[i] for i in train_dataset.indices]
+            names = [self.train_dataset.dataset.names[i] for i in self.train_dataset.indices]
             with open(train_path, 'w') as f:
                 f.write(f"# {len(names)} samples\n")
                 for name in names:
                     f.write(f"{name}\n")
 
-            names = [val_dataset.dataset.names[i] for i in val_dataset.indices]
+            names = [self.val_dataset.dataset.names[i] for i in self.val_dataset.indices]
             with open(val_path, 'w') as f:
                 f.write(f"# {len(names)} samples\n")
                 for name in names:
