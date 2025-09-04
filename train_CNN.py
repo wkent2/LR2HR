@@ -57,7 +57,7 @@ def main():
                      aug_factor=args.data_aug_factor,
                      val_split_frac=0.2,
                      test_split_frac=0,
-                     split_by_job=~args.dont_keep_sets_together,
+                     split_by_job= not args.dont_keep_sets_together,
                      contrast=args.contrast,
                      gamma_step=args.gamma_step,
                      gamma = args.scheduler_gamma,

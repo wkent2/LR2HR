@@ -295,7 +295,7 @@ class Microstructures(Dataset):
         train_dataset = Microstructures(
             full_dataset.file_path,
             full_dataset.output_val,
-            transform=full_dataset.transform,
+            transform=False,
             augment=False,
             remove_bad=False,
         )
@@ -305,7 +305,7 @@ class Microstructures(Dataset):
         val_dataset = Microstructures(
             full_dataset.file_path,
             full_dataset.output_val,
-            transform=full_dataset.transform,
+            transform=False,
             augment=False,
             remove_bad=False,
         )
