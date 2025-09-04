@@ -34,10 +34,10 @@ def remove_bad_data(X, y,names):
     return (X, y, names)
 
 
-def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
+def data_augment_3d(X, Y, names, factor=4, shuffle=True, rng=None, cubic=True):
     """
-    Augments 3D data and corresponding labels.
-    
+    Augments 3D data, labels, and names.
+
     If cubic=True, assumes data is (X, X, X) and allows full 3D axis permutations.
     If cubic=False, assumes data is (Z, X, X) with Z != X and only swaps axes 1 and 2 
     to preserve shape.
@@ -46,6 +46,8 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
     ----------
     X, Y : list
         Lists of corresponding 3D volumes and labels.
+    names : list
+        List of names corresponding to each sample.
     factor : int
         Augmentation factor (final size will be factor * original size).
     shuffle : bool
@@ -61,14 +63,17 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
 
     X_additional = []
     Y_additional = []
+    names_additional = []
+
     N_orig = len(X)
     N_additional = int((factor - 1) * N_orig)
 
     for _ in range(N_additional):
-        # Pick a random X and Y
+        # Pick a random sample
         i = rng.integers(0, N_orig)
         x = X[i]
         y = Y[i]
+        name = names[i]
         original_shape = x.shape
         did_anything = False
 
@@ -81,14 +86,12 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
                     while permute_axes == [0, 1, 2]:
                         rng.shuffle(permute_axes)
                 else:
-                    # Only swap spatial axes 1 and 2, keep Z (axis 0) fixed
                     if rng.binomial(1, 0.5):
-                        permute_axes = [0, 2, 1]  # swap X and Y
+                        permute_axes = [0, 2, 1]
                     else:
-                        permute_axes = [0, 1, 2]  # do nothing
+                        permute_axes = [0, 1, 2]
                 if permute_axes != [0, 1, 2]:
                     x = np.transpose(x, permute_axes)
-                    # Restore shape if needed
                     if x.shape != original_shape:
                         x = x.reshape(original_shape)
                     did_anything = True
@@ -96,29 +99,30 @@ def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
             # Flips
             flipaxes = []
             if rng.binomial(1, 0.5):
-                flipaxes.append(0)  # Z axis
+                flipaxes.append(0)
             if rng.binomial(1, 0.5):
-                flipaxes.append(1)  # X axis
+                flipaxes.append(1)
             if rng.binomial(1, 0.5):
-                flipaxes.append(2)  # Y axis
+                flipaxes.append(2)
             if flipaxes:
                 x = np.flip(x, flipaxes)
-                # Restore shape if needed
                 if x.shape != original_shape:
                     x = x.reshape(original_shape)
                 did_anything = True
 
         X_additional.append(x)
         Y_additional.append(y)
+        names_additional.append(name)  # keep the original name
 
     # Append to original data
     X_aug = X + X_additional
     Y_aug = Y + Y_additional
+    names_aug = names + names_additional
 
     if shuffle:
-        X_aug, Y_aug = shuffle_lists(X_aug, Y_aug, rng=rng)
+        X_aug, Y_aug, names_aug = shuffle_lists(X_aug, Y_aug, names_aug, rng=rng)
 
-    return X_aug, Y_aug
+    return X_aug, Y_aug, names_aug
 
 def test_train_split_by_job_group(X, y, names, test_frac=0.2, shuffle=True, rng=None):
     """
@@ -247,12 +251,13 @@ class Microstructures(Dataset):
             self.X, _, _ = self.norm_images(self.X,self.contrast)
 
         if self.augment:
-            self.X, self.y = data_augment_3d(
-                list(self.X), list(self.y), factor=self.factor,cubic=self.cubic
+            self.X, self.y, self.names = data_augment_3d(
+                list(self.X), list(self.y), list(self.names),factor=self.factor,cubic=self.cubic
             )
             # Convert back to numpy arrays after augmentation
             self.X = np.array(self.X)
             self.y = np.array(self.y)
+            self.names = self.names
 
     def __len__(self):
         return len(self.X)
