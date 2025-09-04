@@ -133,6 +133,7 @@ class MicroCNN(pl.LightningModule):
             val_size = int(self.split_frac * len(full_dataset))
             train_size = len(full_dataset) - val_size
             self.train_dataset, self.val_dataset = random_split(full_dataset, [train_size, val_size])
+            print("Microstructures were split randomly")
         else:
             full_dataset = Microstructures(self.data_path, self.output_val,self.transform,self.augment,self.aug_factor,contrast=self.contrast,job_group=True,cubic=self.cubic)
             self.train_dataset, self.val_dataset = full_dataset.split_by_job_group(full_dataset,self.val_split_frac,seed=self.seed)
