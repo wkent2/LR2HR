@@ -28,7 +28,8 @@ def parseargs():
     p = argparse.ArgumentParser(description="Plots results from CNN training")
     p.add_argument('version',type=int,help="training version")
     p.add_argument('-r',type=str,default="./resultsLR2HR",help="folder containing all training results")
-    p.add_argument('-b',type=bool,default=True,help="Whether to plot the best or the last checkpoint")
+    p.add_argument('-b', type=str2bool, nargs='?', const=True, default=True,
+               help="Whether to plot the best or the last checkpoint")
     p.add_argument('-data',type=str,default=None,help="Option to plot different data")
     p.add_argument('-mi',type=str,default=None,help="Option to plot different microstructure characteristic data")
     p.add_argument('-dmap',type=str,default=None,help="Option to plot with dmap values")
@@ -38,6 +39,17 @@ def parseargs():
     args = p.parse_args()
     
     return args
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 def save_names(train_dataset,val_dataset,path_to_res):
 
@@ -66,6 +78,7 @@ def check_file_exists(filepath,err_msg):
 
 
 def get_checkpoint_path(results_path,best):
+    print("Using best ?",best)
 
     # Construct checkpoints folder path
     ckpt_folder = os.path.join(results_path,'checkpoints')
@@ -147,6 +160,8 @@ if __name__ == "__main__":
     # Initializes train and validation data loaders
     train_DL = DataLoader(train_dataset, batch_size=hparams['batch_size'], num_workers=1,shuffle=True)
     val_DL = DataLoader(val_dataset, batch_size=hparams['batch_size'],num_workers=1)
+
+
 
     # Get path to checkpoint
     chk_path = get_checkpoint_path(path_to_res,args.b)

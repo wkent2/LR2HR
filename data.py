@@ -27,10 +27,11 @@ def shuffle_lists(*a, rng=None):
     return zip(*temp)
 
 
-def remove_bad_data(X, y):
-    X = X[~np.isnan(y).any(axis=1), ...]
-    y = y[~np.isnan(y).any(axis=1), :]
-    return (X, y)
+def remove_bad_data(X, y,names):
+    names = names[~np.isnan(y).any(axis=1)] # Remove names of nan rows
+    X = X[~np.isnan(y).any(axis=1), ...] # Remove subvolumes of nan rows
+    y = y[~np.isnan(y).any(axis=1), :] # Remove characteristics of nan rows
+    return (X, y, names)
 
 
 def data_augment_3d(X, Y, factor=4, shuffle=True, rng=None, cubic=True):
@@ -239,7 +240,8 @@ class Microstructures(Dataset):
             self.y = self.y[:, output_val]
 
         if remove_bad:
-            self.X, self.y = remove_bad_data(self.X, self.y)
+            self.X, self.y,self.names = remove_bad_data(self.X, self.y,self.names)
+
 
         if transform:
             self.X, _, _ = self.norm_images(self.X,self.contrast)
