@@ -222,6 +222,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--cubic",
         type=bool,
+        action="store_false",
         default=True,
         help="Whether or not data is cubic",
     )
