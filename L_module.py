@@ -75,11 +75,13 @@ class MicroCNN(pl.LightningModule):
 
         if len(X.shape)==4:
             in_channel = 2
+            zlen,ylen,xlen = X.shape[1], X.shape[2], X.shape[3]
         else:
             in_channel = 1
+            zlen,ylen,xlen = X.shape[0], X.shape[1], X.shape[2]
         
         # Initialize the model using the CNNModel class
-        self.model = CNNModel(img_shape=(in_channel,X.shape[1], X.shape[2], X.shape[3]), 
+        self.model = CNNModel(img_shape=(in_channel,zlen,ylen,xlen), 
                               out_shape= len(list(output_val)),
                               arcstr=self.arcstr,
                               reg = reg,)
