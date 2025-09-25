@@ -1,0 +1,13 @@
+# 12 samples
+b'bedcbcbccaaz0d'
+b'bedcbcbccaaz0l'
+b'bedcbcbccaaz0c'
+b'bedcbcbccaaz0b'
+b'bedcbcbccaaz0h'
+b'bedcbcbccaaz0a'
+b'bedcbcbccaaz0a'
+b'bedcbcbccaaz0f'
+b'bedcbcbccaaz0j'
+b'bedcbcbccaaz0k'
+b'bedcbcbccaaz0p'
+b'bedcbcbccaaz0d'

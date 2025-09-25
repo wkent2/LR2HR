@@ -1,0 +1,32 @@
+arcstr: c16,a1k2s2,c32,a1k2s2,c64,a1k2s2,c128,a1k2s2,d128,d64
+aug_factor: 4
+augment: true
+batch_size: 32
+contrast: A
+cubic: true
+data_path: ../Test_unzip/bedcbcbcc (1)_0.5_A.h5
+gamma: 0.8
+gamma_step: 10
+learning_rate: 0.0001
+output_val:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 12
+- 13
+- 14
+reg: None
+seed: 42
+split_by_job: false
+test_split_frac: 0
+transform: true
+val_split_frac: 0.2

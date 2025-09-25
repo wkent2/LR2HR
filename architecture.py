@@ -180,11 +180,15 @@ class CNNModel(nn.Module):
 
         # Extract layer parameters from arch. string
         layer_params, names = parse_arch(arcstr)
+
+        # Set start layer correctly
+        layer_params[0][1][0] = img_shape[0]
         
         self.features = nn.Sequential()
         flattened_yet = False
 
         first_linear = get_linear_size(layer_params,img_shape)
+
         
         for i in range(len(layer_params)):
             layertype,nfilter,k,s,p = layer_params[i]

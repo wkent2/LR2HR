@@ -23,6 +23,7 @@ def parseargs():
     p.add_argument('-inr',default=0.05,type=float,help="High-res image voxel resolution.")
     p.add_argument('-outr',default=0.5,type=float,help="Voxel resolution for output")
     p.add_argument('-contr',default='A',type=str,choices=['A','C'],help="Whether or not to use anode or cathode resolution")
+    p.add_argument('-dual',default=False,type=bool)
 
     args = p.parse_args()
     
@@ -89,14 +90,20 @@ def deresolve_voxels(array, input_res, output_res):
 
     return downsampled_array.astype(np.uint32)
 
-def apply_contrast(vol,contrast):
+def apply_contrast(vol,contrast,dual=False):
     
     applied = np.zeros(shape=vol.shape,dtype=np.uint32)
     
     if contrast == 'A':
-        converts = [13500,43500,55500]
+        if dual:
+            converts = [13500,55500,55500]
+        else:
+            converts = [13500,43500,55500]
     elif contrast == 'C':
-        converts = [13500,43500,76500]
+        if dual:
+            converts = [13500,76500,76500]
+        else:
+            converts = [13500,43500,76500]
         
     applied[vol==1]=converts[0]
     applied[vol==2]=converts[1]
@@ -108,18 +115,27 @@ def apply_contrast(vol,contrast):
 def deres_subvol_main(arguments):
     
     # Extract arguments
-    filepath,contrast,inres,outres = arguments
+    filepath,contrast,inres,outres,dual = arguments
     
     # Load 3D segmented array
     vol = np.load(filepath)
     
     # Apply synthetic CT contrast
     applied = apply_contrast(vol,contrast)
-    
+
     # Deresolve data 
     deres = deresolve_voxels(applied, inres, outres)
+
+    # If using dual contrast
+    if dual:
+        applied_dual = apply_contrast(vol,contrast,dual=True)
+        deres_dual = deresolve_voxels(applied_dual, inres, outres)
     
-    return deres
+    
+    if dual:
+        return np.array([deres,deres_dual])
+    else:
+        return deres
     
     
 
@@ -131,7 +147,7 @@ if __name__ == "__main__":
     filepaths = [os.path.join(args.img_dir,file) for file in os.listdir(args.img_dir) if file.endswith('.npy')]
     files= [os.path.basename(fp) for fp in filepaths]
     # Compile arguments for function input
-    arguments = [[fpath,args.contr,args.inr,args.outr] for fpath in filepaths]
+    arguments = [[fpath,args.contr,args.inr,args.outr,args.dual] for fpath in filepaths]
     
     assert os.path.exists(args.micros), f"Canot find '{args.micros}'"
     
@@ -145,6 +161,7 @@ if __name__ == "__main__":
     micros = pd.read_csv(args.micros,header=0,index_col=0)
     micros = micros.reindex(files)
     vals = micros.values
+    
     
     savename = args.img_dir + '_'+str(round(args.outr,1)) + '_'+str(args.contr)+'.h5'
     

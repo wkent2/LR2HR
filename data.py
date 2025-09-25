@@ -38,14 +38,17 @@ def data_augment_3d(X, Y, names, factor=4, shuffle=True, rng=None, cubic=True):
     """
     Augments 3D data, labels, and names.
 
-    If cubic=True, assumes data is (X, X, X) and allows full 3D axis permutations.
-    If cubic=False, assumes data is (Z, X, X) with Z != X and only swaps axes 1 and 2 
+    Supports both single-channel (Z, X, Y) and multi-channel (C, Z, X, Y) data.
+    Augmentations (axis permutations, flips) apply only to spatial dimensions.
+
+    If cubic=True, assumes spatial dimensions are (X, X, X) and allows full 3D axis permutations.
+    If cubic=False, assumes spatial dimensions are (Z, X, X) with Z != X and only swaps axes 1 and 2
     to preserve shape.
 
     Parameters
     ----------
     X, Y : list
-        Lists of corresponding 3D volumes and labels.
+        Lists of corresponding 3D/4D volumes and labels.
     names : list
         List of names corresponding to each sample.
     factor : int
@@ -55,7 +58,7 @@ def data_augment_3d(X, Y, names, factor=4, shuffle=True, rng=None, cubic=True):
     rng : np.random.Generator or None
         Random number generator.
     cubic : bool
-        Whether data is cubic (X,X,X) or rectangular in Z dimension (Z,X,X).
+        Whether spatial data is cubic (X,X,X) or rectangular in Z dimension (Z,X,X).
     """
     print("Augmenting data by a factor of", factor)
     if rng is None:
@@ -77,47 +80,61 @@ def data_augment_3d(X, Y, names, factor=4, shuffle=True, rng=None, cubic=True):
         original_shape = x.shape
         did_anything = False
 
+        # Figure out if data has channel axis
+        if x.ndim == 3:   # (Z, X, Y)
+            spatial_axes = [0, 1, 2]
+            channel_first = False
+        elif x.ndim == 4: # (C, Z, X, Y)
+            spatial_axes = [1, 2, 3]
+            channel_first = True
+        else:
+            raise ValueError(f"Unexpected input shape {x.shape}")
+
         while not did_anything:
-            # Axis permutation
+            # Axis permutation (spatial dims only)
             if rng.binomial(1, 0.5):
                 if cubic:
-                    permute_axes = [0, 1, 2]
+                    permute_axes = spatial_axes.copy()
                     rng.shuffle(permute_axes)
-                    while permute_axes == [0, 1, 2]:
+                    while permute_axes == spatial_axes:
                         rng.shuffle(permute_axes)
                 else:
                     if rng.binomial(1, 0.5):
-                        permute_axes = [0, 2, 1]
+                        permute_axes = spatial_axes.copy()
+                        permute_axes[1], permute_axes[2] = permute_axes[2], permute_axes[1]  # swap X and Y
                     else:
-                        permute_axes = [0, 1, 2]
-                if permute_axes != [0, 1, 2]:
+                        permute_axes = spatial_axes.copy()
+
+                if permute_axes != spatial_axes:
+                    if channel_first:
+                        permute_axes = [0] + permute_axes
                     x = np.transpose(x, permute_axes)
-                    if x.shape != original_shape:
-                        x = x.reshape(original_shape)
                     did_anything = True
 
-            # Flips
+            # Flips (spatial dims only)
             flipaxes = []
             if rng.binomial(1, 0.5):
-                flipaxes.append(0)
+                flipaxes.append(spatial_axes[0])  # flip Z
             if rng.binomial(1, 0.5):
-                flipaxes.append(1)
+                flipaxes.append(spatial_axes[1])  # flip X
             if rng.binomial(1, 0.5):
-                flipaxes.append(2)
+                flipaxes.append(spatial_axes[2])  # flip Y
             if flipaxes:
-                x = np.flip(x, flipaxes)
-                if x.shape != original_shape:
-                    x = x.reshape(original_shape)
+                x = np.flip(x, axis=flipaxes)
                 did_anything = True
+
+        assert x.shape == original_shape, f"Shape mismatch: {x.shape} vs {original_shape}"
 
         X_additional.append(x)
         Y_additional.append(y)
-        names_additional.append(name)  # keep the original name
+        names_additional.append(name)
 
     # Append to original data
     X_aug = X + X_additional
     Y_aug = Y + Y_additional
     names_aug = names + names_additional
+
+
 
     if shuffle:
         X_aug, Y_aug, names_aug = shuffle_lists(X_aug, Y_aug, names_aug, rng=rng)
@@ -236,6 +253,7 @@ class Microstructures(Dataset):
             self.y = f["y"][:]
             self.names = f["names"][:]
 
+
         if type(output_val) == int:
             self.y = self.y[:, output_val : output_val + 1]
         elif len(output_val) == 1:
@@ -276,10 +294,19 @@ class Microstructures(Dataset):
 
     def __getitem__(self, idx):
         x, y = self.X[idx], self.y[idx]
-        
-        x,y = torch.tensor(x[None, ...], dtype=torch.float), torch.tensor(y, dtype=torch.float)
-        
-        return x,y
+
+        # If no channel dimension, add one
+        if x.ndim == 3:
+            x = x[None, ...]   # (1, Z, X, Y)
+        elif x.ndim == 4:
+            pass               # already has channel axis
+        else:
+            raise ValueError(f"Unexpected input shape {x.shape}")
+
+        x = torch.tensor(x, dtype=torch.float)
+        y = torch.tensor(y, dtype=torch.float)
+
+        return x, y
 
     @staticmethod
     def split_by_job_group(full_dataset, test_frac=0.2, shuffle=True,seed=42):
