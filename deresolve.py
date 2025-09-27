@@ -162,8 +162,10 @@ if __name__ == "__main__":
     micros = micros.reindex(files)
     vals = micros.values
     
-    
-    savename = args.img_dir + '_'+str(round(args.outr,1)) + '_'+str(args.contr)+'.h5'
+    if args.dual:
+        savename = args.img_dir + '_'+str(round(args.outr,1)) + '_'+str(args.contr)+'_dual.h5'
+    else:
+        savename = args.img_dir + '_'+str(round(args.outr,1)) + '_'+str(args.contr)+'.h5'
     
     # Create an HDF5 file and store the data
     with h5py.File(savename, 'w') as f:
